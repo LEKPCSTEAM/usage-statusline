@@ -51,7 +51,8 @@ claude plugin uninstall usage-statusline
 
 - **5h** and **7d** appear only on a Claude subscription (Pro, Max, Team), after the first reply
   of a session. Behind an API key or a gateway you may see **Spend** or nothing instead.
-- **Context** shows up after the first reply, once Claude Code knows how full the window is.
+- Before the first reply, **Context** shows the local estimate `/context` makes, marked `~`.
+  The first reply replaces it with the real figure.
 - Countdowns refresh every minute, even while Claude is idle.
 - If another plugin also draws above the prompt, only one of them shows.
 

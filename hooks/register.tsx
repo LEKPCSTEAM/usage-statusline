@@ -10,6 +10,8 @@ const LABELS: Record<string, string> = {
 }
 
 let usage: SessionUsage | undefined
+// /context's local estimate, until a reply reports the real fill
+let estimate: { tokens: number; percent: number } | undefined
 
 function tone(percent: number) {
   return percent >= 80 ? 'error' : percent >= 50 ? 'warning' : 'success'
@@ -38,7 +40,15 @@ function compact(tokens: number) {
 export const register: Register = on => {
   on('session.start', async ($, e, next) => {
     const result = await next(e)
-    usage = await $.session.usage()
+    const current = await $.session.usage()
+    usage = current
+    if (current.context.percent === undefined) {
+      const { breakdown } = (await $.session.usage({ breakdown: 'summary' })).context
+      estimate = breakdown && {
+        tokens: breakdown.totalTokens,
+        percent: (breakdown.totalTokens / current.context.window) * 100,
+      }
+    }
     $.ui.invalidate('ui.render')
     // Redraw so the reset countdowns keep ticking between turns.
     $.clock.every(MINUTE_MS, () => $.ui.invalidate('ui.render'))
@@ -78,15 +88,18 @@ export const register: Register = on => {
     }
 
     const { context } = usage
+    const approx = context.percent === undefined ? estimate : undefined
+    const percent = context.percent ?? approx?.percent
+    const tokens = approx === undefined ? context.tokens : approx.tokens
     const meters = [
-      context.percent !== undefined &&
+      percent !== undefined &&
         meter(
           'context',
           'Context',
-          context.percent,
-          context.tokens === undefined
+          percent,
+          tokens === undefined
             ? undefined
-            : `${compact(context.tokens)}/${compact(context.window)}`,
+            : `${approx ? '~' : ''}${compact(tokens)}/${compact(context.window)}`,
         ),
       ...usage.rateLimits.map(limit => {
         const left = timeLeft(limit.resetsAt, now)

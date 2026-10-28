@@ -1,3 +1,4 @@
+import type { SessionContextBreakdown } from 'claude-code'
 import { expect, mock, test } from 'claude-code/testing'
 
 const NOW = Date.parse('2026-10-28T12:00:00Z')
@@ -60,6 +61,42 @@ test('a 1M window shows its tokens in M', async ($, on) => {
 
   expect((await ui.find({ type: 'Text', text: /\// }))?.text).toBe('215k/1M')
   await ui.unmount()
+})
+
+test('before the first reply, Context shows the /context estimate', async ($, on) => {
+  mock.clock(on, { now: NOW })
+  on('session.start', (_, e) => ({ cwd: e.cwd }))
+  on('session.usage', (_, e) => ({
+    value: {
+      startedAt: NOW,
+      context: {
+        window: 1_000_000,
+        breakdown:
+          e.breakdown === undefined
+            ? undefined
+            : ({ totalTokens: 28_000 } as SessionContextBreakdown),
+      },
+      rateLimits: [],
+    },
+  }))
+  on('session.measure', (_, e) => ({ changed: e.changed }))
+
+  await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
+
+  const before = await $.ui.mount({ ...BAND, surface: 'terminal' })
+  expect((await before.find({ type: 'Text', text: /%$/ }))?.text).toBe('3%')
+  expect((await before.find({ type: 'Text', text: /\// }))?.text).toBe('~28k/1M')
+  await before.unmount()
+
+  await $.session.measure({
+    context: { tokens: 30_000, window: 1_000_000, percent: 3 },
+    rateLimits: [],
+    changed: ['context'],
+  })
+
+  const after = await $.ui.mount({ ...BAND, surface: 'terminal' })
+  expect((await after.find({ type: 'Text', text: /\// }))?.text).toBe('30k/1M')
+  await after.unmount()
 })
 
 test('a survey keeps the band', async ($, on) => {
