@@ -15,7 +15,7 @@ const BAND = {
   },
 } as const
 
-test('the band shows context, rate limits and cost on every surface that has it', async ($, on) => {
+test('the band shows context and rate limits, never cost, on every surface', async ($, on) => {
   mock.clock(on, { now: NOW })
   on('session.start', (_, e) => ({ cwd: e.cwd }))
   on('session.usage', () => ({
@@ -41,7 +41,7 @@ test('the band shows context, rate limits and cost on every surface that has it'
     expect((await ui.find({ type: 'Text', text: /\// }))?.text).toBe('84k/200k')
     expect((await ui.find({ type: 'Text', text: /2h 13m/ }))?.text).toBe('↻ 2h 13m')
     expect((await ui.find({ type: 'Text', text: /3d 4h/ }))?.text).toBe('↻ 3d 4h')
-    expect((await ui.find({ type: 'Text', text: /\$/ }))?.text).toBe('$1.23')
+    expect(await ui.find({ type: 'Text', text: /\$/ })).toBeUndefined()
     await ui.unmount()
   }
 })

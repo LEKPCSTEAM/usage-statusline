@@ -5,7 +5,7 @@ bars sits above the prompt in the Claude desktop app and the terminal. It update
 every reply.
 
 ```
-Context ━━━━────── 42% 84k/200k   5h ━━──────── 24% ↻ 2h 13m   7d ━━━━━━━━── 81% ↻ 3d 4h   $1.23
+Context ━━━━────── 42% 84k/200k   5h ━━──────── 24% ↻ 2h 13m   7d ━━━━━━━━── 81% ↻ 3d 4h
 ```
 
 | Part | What it shows |
@@ -13,7 +13,6 @@ Context ━━━━────── 42% 84k/200k   5h ━━─────�
 | **Context** | How full the current conversation's context window is, and its tokens used out of the window size |
 | **5h** | Your 5-hour usage limit, and the time left until it resets (↻) |
 | **7d** | Your weekly usage limit, and the time left until it resets (↻) |
-| **$** | What this session would cost at API prices |
 
 Bars are green below 50%, yellow from 50%, and red from 80%. Colors follow your Claude Code
 theme.
@@ -53,14 +52,13 @@ claude plugin uninstall usage-statusline
 - **5h** and **7d** appear only on a Claude subscription (Pro, Max, Team), after the first reply
   of a session. Behind an API key or a gateway you may see **Spend** or nothing instead.
 - **Context** shows up after the first reply, once Claude Code knows how full the window is.
-- On a subscription, **$** is an estimate at API prices, not what you are billed.
 - Countdowns refresh every minute, even while Claude is idle.
 - If another plugin also draws above the prompt, only one of them shows.
 
 ## What it does on your machine
 
 Nothing beyond drawing. It reads only the usage figures Claude Code already has (context fill,
-rate-limit windows, session cost). It makes no network requests, runs no programs, and writes
+rate-limit windows). It makes no network requests, runs no programs, and writes
 no files. `claude plugin validate .` lists its whole footprint: `$.session.usage`, `$.clock`,
 and drawing.
 

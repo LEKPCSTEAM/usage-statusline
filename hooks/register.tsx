@@ -100,14 +100,11 @@ export const register: Register = on => {
       }),
     ].filter(item => item !== false)
 
-    if (meters.length === 0 && usage.cost === undefined) return next(e)
+    if (meters.length === 0) return next(e)
 
     return (
       <Box flexDirection="row" flexWrap="wrap" columnGap={3}>
         {meters}
-        {usage.cost !== undefined && (
-          <Text dimColor tabular>{`$${usage.cost.usd.toFixed(2)}`}</Text>
-        )}
       </Box>
     )
   })
