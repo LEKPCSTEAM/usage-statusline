@@ -1,0 +1,6 @@
+{
+  "name": "usage-statusline",
+  "owner": { "name": "LEKPCSTEAM" },
+  "description": "Claude usage bars above the prompt: context, 5-hour and weekly limits.",
+  "plugins": [{ "name": "usage-statusline", "source": "./" }]
+}
