@@ -38,11 +38,28 @@ test('the band shows context, rate limits and cost on every surface that has it'
     const ui = await $.ui.mount({ ...BAND, surface })
 
     expect((await ui.find({ type: 'Text', text: /^42%$/ }))?.text).toBe('42%')
+    expect((await ui.find({ type: 'Text', text: /\// }))?.text).toBe('84k/200k')
     expect((await ui.find({ type: 'Text', text: /2h 13m/ }))?.text).toBe('↻ 2h 13m')
     expect((await ui.find({ type: 'Text', text: /3d 4h/ }))?.text).toBe('↻ 3d 4h')
     expect((await ui.find({ type: 'Text', text: /\$/ }))?.text).toBe('$1.23')
     await ui.unmount()
   }
+})
+
+test('a 1M window shows its tokens in M', async ($, on) => {
+  mock.clock(on, { now: NOW })
+  on('session.measure', (_, e) => ({ changed: e.changed }))
+
+  await $.session.measure({
+    context: { tokens: 214_700, window: 1_000_000, percent: 21 },
+    rateLimits: [],
+    changed: ['context'],
+  })
+
+  const ui = await $.ui.mount({ ...BAND, surface: 'terminal' })
+
+  expect((await ui.find({ type: 'Text', text: /\// }))?.text).toBe('215k/1M')
+  await ui.unmount()
 })
 
 test('a survey keeps the band', async ($, on) => {

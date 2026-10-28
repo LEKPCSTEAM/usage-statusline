@@ -28,6 +28,13 @@ function timeLeft(resetsAt: string | undefined, now: number) {
   return `${minutes}m`
 }
 
+function compact(tokens: number) {
+  // From here k would round to 1000k
+  if (tokens >= 999_500) return `${Number((tokens / 1_000_000).toFixed(1))}M`
+  if (tokens >= 1_000) return `${Math.round(tokens / 1_000)}k`
+  return `${tokens}`
+}
+
 export const register: Register = on => {
   on('session.start', async ($, e, next) => {
     const result = await next(e)
@@ -52,7 +59,7 @@ export const register: Register = on => {
     const { Box, Text } = $.ui.resolve(e)
     const now = await $.clock.now()
 
-    const meter = (key: string, label: string, percent: number, note?: string) => {
+    const meter = (key: string, label: string, percent: number, detail?: string) => {
       const filled = Math.max(0, Math.min(BAR_CELLS, Math.round((percent / 100) * BAR_CELLS)))
 
       return (
@@ -65,22 +72,32 @@ export const register: Register = on => {
           <Text tabular weight="semibold" color={tone(percent)}>
             {`${Math.round(percent)}%`}
           </Text>
-          {note !== undefined && <Text dimColor tabular>{`↻ ${note}`}</Text>}
+          {detail !== undefined && <Text dimColor tabular>{detail}</Text>}
         </Box>
       )
     }
 
+    const { context } = usage
     const meters = [
-      usage.context.percent !== undefined &&
-        meter('context', 'Context', usage.context.percent),
-      ...usage.rateLimits.map(limit =>
+      context.percent !== undefined &&
         meter(
+          'context',
+          'Context',
+          context.percent,
+          context.tokens === undefined
+            ? undefined
+            : `${compact(context.tokens)}/${compact(context.window)}`,
+        ),
+      ...usage.rateLimits.map(limit => {
+        const left = timeLeft(limit.resetsAt, now)
+
+        return meter(
           limit.kind,
           LABELS[limit.kind] ?? limit.kind,
           limit.percentUsed,
-          timeLeft(limit.resetsAt, now),
-        ),
-      ),
+          left === undefined ? undefined : `↻ ${left}`,
+        )
+      }),
     ].filter(item => item !== false)
 
     if (meters.length === 0 && usage.cost === undefined) return next(e)

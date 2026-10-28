@@ -5,12 +5,12 @@ bars sits above the prompt in the Claude desktop app and the terminal. It update
 every reply.
 
 ```
-Context ━━━━────── 42%   5h ━━──────── 24% ↻ 2h 13m   7d ━━━━━━━━── 81% ↻ 3d 4h   $1.23
+Context ━━━━────── 42% 84k/200k   5h ━━──────── 24% ↻ 2h 13m   7d ━━━━━━━━── 81% ↻ 3d 4h   $1.23
 ```
 
 | Part | What it shows |
 | --- | --- |
-| **Context** | How full the current conversation's context window is |
+| **Context** | How full the current conversation's context window is, and its tokens used out of the window size |
 | **5h** | Your 5-hour usage limit, and the time left until it resets (↻) |
 | **7d** | Your weekly usage limit, and the time left until it resets (↻) |
 | **$** | What this session would cost at API prices |
